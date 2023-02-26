@@ -24,8 +24,6 @@ object MainApp {
 
   def main(args:Array[String]):Unit = {
 
-    val server = new Server(8080)
-
     val beans = "/META-INF/beans.xml"
     val webRootLocation = this.getClass.getResource(beans);
     if (webRootLocation == null) throw new IllegalStateException("Unable to determine webroot URL location");
@@ -39,9 +37,9 @@ object MainApp {
 
     // Expect:INFO: WELD-ENV-001212: Jetty CdiDecoratingListener support detected, CDI injection will be available in Listeners, Servlets and Filters
     context.setInitParameter(CdiServletContainerInitializer.CDI_INTEGRATION_ATTRIBUTE, CdiDecoratingListener.MODE)
-    context.addServletContainerInitializer(new CdiServletContainerInitializer())
-    context.addServletContainerInitializer(new EnhancedListener())
-    context.addServletContainerInitializer(new FacesInitializer)
+    context.addServletContainerInitializer(new CdiServletContainerInitializer)
+    context.addServletContainerInitializer(new EnhancedListener) // weld initializer
+    context.addServletContainerInitializer(new FacesInitializer) // mojarra initializer
 
     // jersey servlet
     val jersey = context.addServlet(classOf[ServletContainer], "/api/*")
@@ -57,6 +55,7 @@ object MainApp {
     // hello servlet
     context.addServlet(classOf[HelloServlet], "/hello")
 
+    val server = new Server(8080)
     server.setHandler(context)
     server.start()
   }
