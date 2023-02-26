@@ -42,13 +42,13 @@ object MainApp {
     context.setInitParameter(CdiServletContainerInitializer.CDI_INTEGRATION_ATTRIBUTE, CdiDecoratingListener.MODE)
     context.addServletContainerInitializer(new CdiServletContainerInitializer)
     context.addServletContainerInitializer(new EnhancedListener) // weld initializer
-    context.addServletContainerInitializer(new FacesInitializer{
+    context.addServletContainerInitializer(new FacesInitializer { // mojarra initializer
       override def onStartup(classes: util.Set[Class[_]], servletContext: ServletContext): Unit = {
         // register jsf classes
         FacesInitializer.addAnnotatedClasses(Collections.singleton(classOf[HelloComponent]), servletContext)
         super.onStartup(classes, servletContext)
       }
-    }) // mojarra initializer
+    })
 
     // jersey servlet
     val jersey = context.addServlet(classOf[ServletContainer], "/api/*")
