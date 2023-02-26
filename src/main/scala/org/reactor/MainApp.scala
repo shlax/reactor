@@ -29,7 +29,7 @@ object MainApp {
     if (webRootLocation == null) throw new IllegalStateException("Unable to determine webroot URL location");
 
     val beansUri = webRootLocation.toURI.toASCIIString
-    val webRootUri = URI.create(beansUri.substring(0, beansUri.length - beans.length))
+    val webRootUri = URI.create(beansUri.substring(0, beansUri.length + 1 - beans.length))
 
     val context = new ServletContextHandler(ServletContextHandler.SESSIONS)
     context.setBaseResource(Resource.newResource(webRootUri))
@@ -44,10 +44,12 @@ object MainApp {
     // jersey servlet
     val jersey = context.addServlet(classOf[ServletContainer], "/api/*")
     jersey.setInitParameter(ServerProperties.PROVIDER_PACKAGES, this.getClass.getPackageName)
+    jersey.setInitParameter(ServerProperties.WADL_FEATURE_DISABLE, "true") // disable warning: JAX-B API not found . WADL feature is disabled.
     jersey.setInitOrder(1)
 
     // mojarra servlet
-    context.addServlet(classOf[FacesServlet], "*.xhtml")
+    val mojarra = context.addServlet(classOf[FacesServlet], "*.xhtml")
+    mojarra.setInitOrder(2)
 
     // Initialize jakarta.websocket layer
     JakartaWebSocketServletContainerInitializer.configure(context, null)

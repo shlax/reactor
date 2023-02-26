@@ -1,6 +1,6 @@
 # reactor
 
-demo setup of: jetty + weld + jersey + mojarra
+demo setup of: jetty(embedded) + weld(CDI) + jersey(JAX-RS/REST) + mojarra(JSF/Jakarta Faces)
 
 https://github.com/jetty-project/embedded-jetty-jersey-weld
 
