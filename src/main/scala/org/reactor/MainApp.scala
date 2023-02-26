@@ -1,6 +1,7 @@
 package org.reactor
 
 import com.sun.faces.config.FacesInitializer
+import jakarta.faces.push.PushContext
 import jakarta.faces.webapp.FacesServlet
 import jakarta.servlet.ServletContext
 import org.eclipse.jetty.cdi.{CdiDecoratingListener, CdiServletContainerInitializer}
@@ -12,7 +13,7 @@ import org.eclipse.jetty.util.resource.Resource
 import org.eclipse.jetty.webapp.WebAppContext
 import org.glassfish.jersey.server.ServerProperties
 import org.glassfish.jersey.servlet.ServletContainer
-import org.reactor.test.{HelloComponent, HelloServlet}
+import org.reactor.test.{HelloComponent, HelloServlet, HelloSocket}
 import org.slf4j.bridge.SLF4JBridgeHandler
 
 import java.net.URI
@@ -38,11 +39,14 @@ object MainApp {
     context.setBaseResource(Resource.newResource(webRootUri))
     context.setContextPath("/")
 
+    context.setInitParameter(PushContext.ENABLE_WEBSOCKET_ENDPOINT_PARAM_NAME, "true")
+    context.setClassLoader(this.getClass.getClassLoader)
+
     // Expect:INFO: WELD-ENV-001212: Jetty CdiDecoratingListener support detected, CDI injection will be available in Listeners, Servlets and Filters
     context.setInitParameter(CdiServletContainerInitializer.CDI_INTEGRATION_ATTRIBUTE, CdiDecoratingListener.MODE)
     context.addServletContainerInitializer(new CdiServletContainerInitializer)
     context.addServletContainerInitializer(new EnhancedListener) // weld initializer
-    context.addServletContainerInitializer(new FacesInitializer { // mojarra initializer
+    context.addServletContainerInitializer(new FacesInitializer() { // mojarra initializer
       override def onStartup(classes: util.Set[Class[_]], servletContext: ServletContext): Unit = {
         // register jsf classes
         FacesInitializer.addAnnotatedClasses(Collections.singleton(classOf[HelloComponent]), servletContext)
@@ -61,7 +65,9 @@ object MainApp {
     mojarra.setInitOrder(2)
 
     // Initialize jakarta.websocket layer
-    JakartaWebSocketServletContainerInitializer.configure(context, null)
+    JakartaWebSocketServletContainerInitializer.configure(context, (servletContext, wsContainer) => {
+      wsContainer.addEndpoint(classOf[HelloSocket])
+    })
 
     // hello servlet
     val hello = context.addServlet(classOf[HelloServlet], "/hello")

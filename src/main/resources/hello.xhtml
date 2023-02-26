@@ -4,8 +4,25 @@
       xmlns:x="hello.components">
     <h:head>
         <title>jsf</title>
+        <script>
+            function onMessage(message, channel, event) {
+                console.log('jsf push message::' + message + ", channel ::" + channel + ", event::" + event);
+                document.getElementById("message").innerHTML = message;
+            }
+        </script>
     </h:head>
     <h:body>
         <x:helloComponent value="#{helloBean.hello()}" />
+
+        <div>
+            <f:websocket channel="helloChannel" onmessage="onMessage" />
+            <h:form id="form">
+                <h:commandButton id="sendMessage" type="submit" action="#{websocketHelloBean.sendMessage()}" value="Get Time">
+                    <f:ajax/>
+                </h:commandButton>
+            </h:form>
+            <div id="message"></div>
+        </div>
+
     </h:body>
 </html>
