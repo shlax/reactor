@@ -9,7 +9,8 @@ import java.time.LocalDateTime;
 @RequestScoped
 public class HelloBean {
 
-    LocalDateTime time;
+    private final LocalDateTime time;
+    
     public HelloBean(){
         time = LocalDateTime.now();
         System.out.println("created:HelloBean "+time);
