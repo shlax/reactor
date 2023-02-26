@@ -64,7 +64,8 @@ object MainApp {
     JakartaWebSocketServletContainerInitializer.configure(context, null)
 
     // hello servlet
-    context.addServlet(classOf[HelloServlet], "/hello")
+    val hello = context.addServlet(classOf[HelloServlet], "/hello")
+    hello.setInitOrder(3)
 
     val server = new Server(8080)
     server.setHandler(context)
