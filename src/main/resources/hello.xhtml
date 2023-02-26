@@ -15,7 +15,6 @@
         <x:helloComponent value="#{helloBean.hello()}" />
 
         <div>
-            <f:websocket channel="helloChannel" onmessage="onMessage" />
             <h:form id="form">
                 <h:commandButton id="sendMessage" type="submit" action="#{websocketHelloBean.sendMessage()}" value="Get Time">
                     <f:ajax/>
@@ -24,5 +23,6 @@
             <div id="message"></div>
         </div>
 
+        <f:websocket channel="helloChannel" onmessage="onMessage" />
     </h:body>
 </html>
