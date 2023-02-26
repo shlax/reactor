@@ -44,7 +44,7 @@ object MainApp {
     context.addServletContainerInitializer(new EnhancedListener) // weld initializer
     context.addServletContainerInitializer(new FacesInitializer{
       override def onStartup(classes: util.Set[Class[_]], servletContext: ServletContext): Unit = {
-        // hello FacesComponent
+        // register jsf classes
         FacesInitializer.addAnnotatedClasses(Collections.singleton(classOf[HelloComponent]), servletContext)
         super.onStartup(classes, servletContext)
       }
