@@ -2,6 +2,7 @@ package org.reactor
 
 import com.sun.faces.config.FacesInitializer
 import jakarta.faces.webapp.FacesServlet
+import jakarta.servlet.ServletContext
 import org.eclipse.jetty.cdi.{CdiDecoratingListener, CdiServletContainerInitializer}
 import org.eclipse.jetty.server.Server
 import org.eclipse.jetty.servlet.ServletContextHandler
@@ -11,10 +12,12 @@ import org.eclipse.jetty.util.resource.Resource
 import org.eclipse.jetty.webapp.WebAppContext
 import org.glassfish.jersey.server.ServerProperties
 import org.glassfish.jersey.servlet.ServletContainer
-import org.reactor.test.HelloServlet
+import org.reactor.test.{HelloComponent, HelloServlet}
 import org.slf4j.bridge.SLF4JBridgeHandler
 
 import java.net.URI
+import java.util
+import java.util.Collections
 
 object MainApp {
 
@@ -39,7 +42,13 @@ object MainApp {
     context.setInitParameter(CdiServletContainerInitializer.CDI_INTEGRATION_ATTRIBUTE, CdiDecoratingListener.MODE)
     context.addServletContainerInitializer(new CdiServletContainerInitializer)
     context.addServletContainerInitializer(new EnhancedListener) // weld initializer
-    context.addServletContainerInitializer(new FacesInitializer) // mojarra initializer
+    context.addServletContainerInitializer(new FacesInitializer{
+      override def onStartup(classes: util.Set[Class[_]], servletContext: ServletContext): Unit = {
+        // hello FacesComponent
+        FacesInitializer.addAnnotatedClasses(Collections.singleton(classOf[HelloComponent]), servletContext)
+        super.onStartup(classes, servletContext)
+      }
+    }) // mojarra initializer
 
     // jersey servlet
     val jersey = context.addServlet(classOf[ServletContainer], "/api/*")
