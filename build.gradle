@@ -22,8 +22,10 @@ dependencies {
     implementation group: 'org.slf4j', name: 'slf4j-simple', version: '2.0.6'
     implementation group: 'org.slf4j', name: 'jul-to-slf4j', version: '2.0.6'
 
-    implementation group: 'org.eclipse.jetty.websocket', name: 'websocket-jakarta-server', version: '11.0.13'
     implementation group: 'org.eclipse.jetty', name: 'jetty-cdi', version: '11.0.13'
+    implementation group: 'org.eclipse.jetty.websocket', name: 'websocket-jakarta-server', version: '11.0.13'
+    // implementation group: 'jakarta.websocket', name: 'jakarta.websocket-api', version: '2.1.0'
+    // implementation group: 'jakarta.websocket', name: 'jakarta.websocket-client-api', version: '2.1.0'
 
     implementation group: 'org.jboss.weld.servlet', name: 'weld-servlet-core', version: '5.1.0.Final'
 
