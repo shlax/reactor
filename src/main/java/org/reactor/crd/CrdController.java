@@ -26,11 +26,13 @@ public class CrdController implements Serializable{
         synchronized (definitionsLock) {
             if(definitions != null) return definitions;
 
-            var crdList = context.getClient().apiextensions().v1().customResourceDefinitions().list().getItems();
+            try(var ext = context.getClient().apiextensions()) {
+                var crdList = ext.v1().customResourceDefinitions().list().getItems();
 
-            definitions = new ArrayList<>();
-            for(var crd : crdList){
-                definitions.add(new MenuItem( crd.getMetadata().getName(), crd.getSpec().getNames().getKind()));
+                definitions = new ArrayList<>();
+                for (var crd : crdList) {
+                    definitions.add(new MenuItem(crd.getMetadata().getName(), crd.getSpec().getNames().getKind()));
+                }
             }
 
             return definitions;
@@ -60,44 +62,96 @@ public class CrdController implements Serializable{
         
             if(objects != null) return objects;
 
-            var crd = context.getClient().apiextensions().v1().customResourceDefinitions().withName(this.crdId).get();
+            try(var ext = context.getClient().apiextensions()) {
+                var crd = ext.v1().customResourceDefinitions().withName(this.crdId).get();
 
-            var kind = crd.getSpec().getNames().getKind();
-            var group = crd.getSpec().getGroup();
+                var kind = crd.getSpec().getNames().getKind();
+                var group = crd.getSpec().getGroup();
 
-            objects = new ArrayList<>();
-            for(var v : crd.getSpec().getVersions()){
-                var ver = v.getName();
+                objects = new ArrayList<>();
+                for (var v : crd.getSpec().getVersions()) {
+                    var ver = v.getName();
 
-                var ctx = new ResourceDefinitionContext.Builder()
-                        .withKind(kind)
-                        .withGroup(group)                    
-                        .withVersion(ver)
-                        .build();
+                    var ctx = new ResourceDefinitionContext.Builder()
+                            .withKind(kind)
+                            .withGroup(group)
+                            .withVersion(ver)
+                            .build();
 
-                var objs = context.getClient().genericKubernetesResources(ctx).list().getItems();
+                    var objs = context.getClient().genericKubernetesResources(ctx).list().getItems();
 
-                for(var obj : objs){
-                    var nm = obj.getMetadata().getName();
-                    objects.add(new MenuItem(nm, nm));
+                    for (var obj : objs) {
+                        var nm = obj.getMetadata().getName();
+                        objects.add(new MenuItem(nm+":"+ver, nm));
+                    }
+
                 }
-
             }
 
             return objects;
         }
     }
-        
-    private volatile String objId;
+
+    private final Object specLock = new Object();
+    private String spec;
+    private String objId;
     
     public void open(String objId){
         //System.out.println("setObjId("+objId+")");
-        this.objId = objId;        
+        synchronized (specLock) {
+            if(!Objects.equals(this.objId, objId)) {
+                this.objId = objId;
+                spec = null;
+            }
+        }
         
     } 
-    
-    public String getCrdName(){
-        return crdId+" "+objId;
+
+    // https://developers.redhat.com/articles/2023/01/05/how-use-fabric8-kubernetes-client#
+    public String getSpec(){
+        synchronized (objectsLock){
+            if(crdId == null) return "";
+
+            synchronized (specLock){
+                if(objId == null) return "";
+                if(spec != null) return spec;
+
+                try(var ext = context.getClient().apiextensions()) {
+                    var crd = ext.v1().customResourceDefinitions().withName(this.crdId).get();
+
+                    var kind = crd.getSpec().getNames().getKind();
+                    var group = crd.getSpec().getGroup();
+
+                    var nmVer = objId.split(":");
+
+                    var ctx = new ResourceDefinitionContext.Builder()
+                            .withKind(kind)
+                            .withGroup(group)
+                            .withVersion(nmVer[1])
+                            .build();
+
+                    var i = context.getClient().genericKubernetesResources(ctx)
+                            .withName(nmVer[0])
+                            .get();
+
+                    var s = i.getAdditionalPropertiesNode().get("spec");
+
+                    spec = s.toPrettyString();
+                }
+
+                return spec;
+            }
+        }
+    }
+
+    public String getTitle(){
+        synchronized (objectsLock){
+            if(crdId == null) return "";
+            synchronized (specLock){
+                if(objId == null) return crdId;
+                return crdId+" "+objId;
+            }
+        }
     }
     
 }
