@@ -1,6 +1,7 @@
 
 plugins {
-    id 'scala'
+    id 'java'
+    id 'application'
 }
 
 repositories {
@@ -11,30 +12,41 @@ sourceSets {
   main {
     output.resourcesDir = file('build/bin')
     java.destinationDirectory.set(file('build/bin'))
-    scala.destinationDirectory.set(file('build/bin'))
+    // scala.destinationDirectory.set(file('build/bin'))
   }
 }
 
+application {
+    mainClass = 'org.reactor.MainApp' 
+}
+
 dependencies {
-    implementation group: 'org.scala-lang', name: 'scala3-library_3', version: '3.2.1'
+    // implementation group: 'org.scala-lang', name: 'scala3-library_3', version: '3.2.1'
+
+    compileOnly group: 'org.projectlombok', name: 'lombok', version: '1.18.26'
+    annotationProcessor group: 'org.projectlombok', name: 'lombok', version: '1.18.26'
 
     implementation group: 'org.slf4j', name: 'slf4j-api', version: '2.0.6'
     implementation group: 'org.slf4j', name: 'slf4j-simple', version: '2.0.6'
     implementation group: 'org.slf4j', name: 'jul-to-slf4j', version: '2.0.6'
 
     implementation group: 'org.eclipse.jetty', name: 'jetty-cdi', version: '11.0.13'
-    implementation group: 'org.eclipse.jetty.websocket', name: 'websocket-jakarta-server', version: '11.0.13'
-    // implementation group: 'jakarta.websocket', name: 'jakarta.websocket-api', version: '2.1.0'
-    // implementation group: 'jakarta.websocket', name: 'jakarta.websocket-client-api', version: '2.1.0'
+    // implementation group: 'org.eclipse.jetty.websocket', name: 'websocket-jakarta-server', version: '11.0.13'
+    implementation group: 'jakarta.websocket', name: 'jakarta.websocket-api', version: '2.1.0'
+    implementation group: 'jakarta.websocket', name: 'jakarta.websocket-client-api', version: '2.1.0'
 
     implementation group: 'org.jboss.weld.servlet', name: 'weld-servlet-core', version: '5.1.0.Final'
 
-    implementation group: 'org.glassfish.jersey.containers', name: 'jersey-container-servlet-core', version: '3.1.1'
-    implementation group: 'org.glassfish.jersey.inject', name: 'jersey-cdi2-se', version: '3.1.1'
-    implementation group: 'jakarta.activation', name: 'jakarta.activation-api', version: '2.1.1'
+    // implementation group: 'org.glassfish.jersey.containers', name: 'jersey-container-servlet-core', version: '3.1.1'
+    // implementation group: 'org.glassfish.jersey.inject', name: 'jersey-cdi2-se', version: '3.1.1'
+    // implementation group: 'jakarta.activation', name: 'jakarta.activation-api', version: '2.1.1'
 
     implementation group: 'org.glassfish', name: 'jakarta.faces', version: '4.0.1'
     implementation group: 'org.glassfish.expressly', name: 'expressly', version: '5.0.0'
-    implementation group: 'org.glassfish', name: 'jakarta.json', version: '2.0.1'
+    // implementation group: 'org.glassfish', name: 'jakarta.json', version: '2.0.1'
+
+
+    // kubernetes
+    implementation group: 'io.fabric8', name: 'kubernetes-client', version: '6.4.1'
 
 }

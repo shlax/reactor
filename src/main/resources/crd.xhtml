@@ -1,0 +1,43 @@
+<ui:composition template="/WEB-INF/layout.xhtml"
+        xmlns:ui="http://java.sun.com/jsf/facelets"
+        xmlns:f="http://java.sun.com/jsf/core"
+        xmlns:h="http://java.sun.com/jsf/html">
+
+    <ui:define name="sidebar">
+        <div>
+            Menu
+        </div>
+        
+        <ul>
+            <ui:repeat value="#{crdController.crdDefinitions}" var="i">
+                <li>
+                    <h:form>
+                        <f:ajax render="outline">
+                            <h:commandButton value="#{i.label}" action="#{crdController.list(i.id)}"/>
+                        </f:ajax>
+                    </h:form>
+                </li>
+            </ui:repeat>
+        </ul>           
+
+        <h:panelGroup layout="block" id="outline">
+            <ul>
+                <ui:repeat value="#{crdController.crdObjects}" var="j">
+                    <li>
+                        <h:form>
+                            <f:ajax render="content">
+                                <h:commandButton value="#{j.label}" action="#{crdController.open(j.id)}"/>
+                            </f:ajax>
+                        </h:form>
+                    </li>
+                </ui:repeat>
+            </ul> 
+        </h:panelGroup>
+        
+    </ui:define>
+
+    <ui:define name="content">
+        open #{crdController.crdName}
+    </ui:define>
+
+</ui:composition>

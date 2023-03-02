@@ -1,0 +1,23 @@
+<!DOCTYPE html>
+<html xmlns:f="http://java.sun.com/jsf/core"
+      xmlns:h="http://java.sun.com/jsf/html"
+      xmlns:ui="http://java.sun.com/jsf/facelets">
+    <h:head>
+        <title>open swift</title>
+        <h:outputStylesheet library = "css" name = "style.css" />
+    </h:head>
+    <h:body>
+        <div class="wrapper">
+            <div class="header">
+                Header
+            </div>
+            <div class="sidebar">
+                <ui:insert name="sidebar"/>
+            </div>
+            <!-- <f:ajax render=":content" /> -->
+            <h:panelGroup layout="block" id="content" class="content">
+                <ui:insert name="content"/>
+            </h:panelGroup>
+        </div>
+    </h:body>
+</html>
