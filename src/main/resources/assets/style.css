@@ -21,3 +21,9 @@
     grid-column: 2;
     grid-row: 2;
 }
+
+#editor { 
+    position: relative;
+    width: 500px;
+    height: 500px;
+}

@@ -9,6 +9,8 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 import org.reactor.kubernetes.KubernetesContext;
+import org.yaml.snakeyaml.Yaml;
+
 import java.util.Objects;
 
 @Named
@@ -26,13 +28,12 @@ public class CrdController implements Serializable{
         synchronized (definitionsLock) {
             if(definitions != null) return definitions;
 
-            try(var ext = context.getClient().apiextensions()) {
-                var crdList = ext.v1().customResourceDefinitions().list().getItems();
+            var ext = context.getClient().apiextensions();
+            var crdList = ext.v1().customResourceDefinitions().list().getItems();
 
-                definitions = new ArrayList<>();
-                for (var crd : crdList) {
-                    definitions.add(new MenuItem(crd.getMetadata().getName(), crd.getSpec().getNames().getKind()));
-                }
+            definitions = new ArrayList<>();
+            for (var crd : crdList) {
+                definitions.add(new MenuItem(crd.getMetadata().getName(), crd.getSpec().getNames().getKind()));
             }
 
             return definitions;
@@ -62,29 +63,28 @@ public class CrdController implements Serializable{
         
             if(objects != null) return objects;
 
-            try(var ext = context.getClient().apiextensions()) {
-                var crd = ext.v1().customResourceDefinitions().withName(this.crdId).get();
+            var ext = context.getClient().apiextensions();
+            var crd = ext.v1().customResourceDefinitions().withName(this.crdId).get();
 
-                var kind = crd.getSpec().getNames().getKind();
-                var group = crd.getSpec().getGroup();
+            var kind = crd.getSpec().getNames().getKind();
+            var group = crd.getSpec().getGroup();
 
-                objects = new ArrayList<>();
-                for (var v : crd.getSpec().getVersions()) {
-                    var ver = v.getName();
+            objects = new ArrayList<>();
+            for (var v : crd.getSpec().getVersions()) {
+                var ver = v.getName();
 
-                    var ctx = new ResourceDefinitionContext.Builder()
-                            .withKind(kind)
-                            .withGroup(group)
-                            .withVersion(ver)
-                            .build();
+                var ctx = new ResourceDefinitionContext.Builder()
+                        .withNamespaced(true)
+                        .withKind(kind)
+                        .withGroup(group)
+                        .withVersion(ver)
+                        .build();
 
-                    var objs = context.getClient().genericKubernetesResources(ctx).list().getItems();
+                var objs = context.getClient().genericKubernetesResources(ctx).list().getItems();
 
-                    for (var obj : objs) {
-                        var nm = obj.getMetadata().getName();
-                        objects.add(new MenuItem(nm+":"+ver, nm));
-                    }
-
+                for (var obj : objs) {
+                    var nm = obj.getMetadata().getName();
+                    objects.add(new MenuItem(nm+"/"+ver, nm));
                 }
             }
 
@@ -116,28 +116,27 @@ public class CrdController implements Serializable{
                 if(objId == null) return "";
                 if(spec != null) return spec;
 
-                try(var ext = context.getClient().apiextensions()) {
-                    var crd = ext.v1().customResourceDefinitions().withName(this.crdId).get();
+                var ext = context.getClient().apiextensions();
+                var crd = ext.v1().customResourceDefinitions().withName(this.crdId).get();
 
-                    var kind = crd.getSpec().getNames().getKind();
-                    var group = crd.getSpec().getGroup();
+                var kind = crd.getSpec().getNames().getKind();
+                var group = crd.getSpec().getGroup();
 
-                    var nmVer = objId.split(":");
+                var nmVer = objId.split("/");
 
-                    var ctx = new ResourceDefinitionContext.Builder()
-                            .withKind(kind)
-                            .withGroup(group)
-                            .withVersion(nmVer[1])
-                            .build();
+                var ctx = new ResourceDefinitionContext.Builder()
+                        .withNamespaced(true)
+                        .withKind(kind)
+                        .withGroup(group)
+                        .withVersion(nmVer[1])
+                        .build();
 
-                    var i = context.getClient().genericKubernetesResources(ctx)
-                            .withName(nmVer[0])
-                            .get();
+                var i = context.getClient().genericKubernetesResources(ctx)
+                        .withName(nmVer[0])
+                        .get();
 
-                    var s = i.getAdditionalPropertiesNode().get("spec");
-
-                    spec = s.toPrettyString();
-                }
+                var s = i.getAdditionalProperties().get("spec");
+                spec = new Yaml().dump(s);
 
                 return spec;
             }
@@ -149,7 +148,7 @@ public class CrdController implements Serializable{
             if(crdId == null) return "";
             synchronized (specLock){
                 if(objId == null) return crdId;
-                return crdId+" "+objId;
+                return crdId+":"+objId;
             }
         }
     }

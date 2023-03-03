@@ -14,6 +14,7 @@ import org.slf4j.bridge.SLF4JBridgeHandler;
 
 import java.net.URI;
 import java.util.Set;
+import org.eclipse.jetty.servlet.DefaultServlet;
 
 public class MainApp {
 
@@ -45,18 +46,18 @@ public class MainApp {
         context.addServletContainerInitializer(new CdiServletContainerInitializer());
         context.addServletContainerInitializer(new EnhancedListener()); // weld initializer
         context.addServletContainerInitializer(new FacesInitializer() { // mojarra initializer
-            @Override
-            public void onStartup(Set<Class<?>> classes, ServletContext servletContext) throws ServletException {
-                // register jsf classes
-                super.onStartup(classes, servletContext);
-            }
-        });
+                @Override
+                public void onStartup(Set<Class<?>> classes, ServletContext servletContext) throws ServletException {
+                    // register jsf classes
+                    super.onStartup(classes, servletContext);
+                }
+            });
 
         // mojarra servlet
         var mojarra = context.addServlet(FacesServlet.class, "*.xhtml");
         mojarra.setInitOrder(1);
 
-        // context.addServlet(classOf[DefaultServlet], "/static/*")
+        context.addServlet(DefaultServlet.class, "/assets/*");
 
         var server = new Server(8080);
         server.setHandler(context);
