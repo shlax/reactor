@@ -7,33 +7,22 @@
         <div>
             Menu
         </div>
-        
-        <ul>
-            <ui:repeat value="#{crdController.crdDefinitions}" var="i">
-                <li>
-                    <h:form>
-                        <f:ajax render="outline">
-                            <h:commandButton value="#{i.label}" action="#{crdController.list(i.id)}"/>
-                        </f:ajax>
-                    </h:form>
-                </li>
-            </ui:repeat>
-        </ul>           
-
+        <ui:repeat value="#{crdController.crdDefinitions}" var="i">
+            <h:form>
+                <f:ajax render="outline">
+                    <h:commandButton value="#{i.label}" action="#{crdController.list(i.id)}"/>
+                </f:ajax>
+            </h:form>
+        </ui:repeat>
         <h:panelGroup layout="block" id="outline">
-            <ul>
-                <ui:repeat value="#{crdController.crdObjects}" var="j">
-                    <li>
-                        <h:form>
-                            <f:ajax render="content">
-                                <h:commandButton value="#{j.label}" action="#{crdController.open(j.id)}"/>
-                            </f:ajax>
-                        </h:form>
-                    </li>
-                </ui:repeat>
-            </ul> 
+            <ui:repeat value="#{crdController.crdObjects}" var="j">
+                <h:form>
+                    <f:ajax render="content">
+                        <h:commandButton value="#{j.label}" action="#{crdController.open(j.id)}"/>
+                    </f:ajax>
+                </h:form>
+            </ui:repeat>
         </h:panelGroup>
-        
     </ui:define>
 
     <ui:define name="content">
