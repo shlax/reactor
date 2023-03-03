@@ -14,3 +14,4 @@ https://github.com/eclipse-ee4j/mojarra
 
 https://jakarta.ee/specifications/faces/4.0/vdldoc/
 
+https://github.com/microsoft/monaco-editor
