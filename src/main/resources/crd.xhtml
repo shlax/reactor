@@ -49,7 +49,7 @@
         <h:panelGroup layout="block" id="setEditorValue"><script>
             // var value = window.monacoEditor.getValue();
             if(window.monacoEditor){
-                window.monacoEditor.getModel().setValue(#{crdController.spec});
+                window.monacoEditor.setValue(#{crdController.spec});
             }
         </script></h:panelGroup>
     </ui:define>
