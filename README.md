@@ -15,3 +15,5 @@ https://github.com/eclipse-ee4j/mojarra
 https://jakarta.ee/specifications/faces/4.0/vdldoc/
 
 https://github.com/microsoft/monaco-editor
+
+https://github.com/react-monaco-editor/react-monaco-editor/blob/master/example/index.js#L26
