@@ -17,7 +17,7 @@
         <h:panelGroup layout="block" id="outline">
             <ui:repeat value="#{crdController.crdObjects}" var="j">
                 <h:form>
-                    <f:ajax render="content">
+                    <f:ajax render="setEditorValue setToolbar">
                         <h:commandButton value="#{j.label}" action="#{crdController.open(j.id)}"/>
                     </f:ajax>
                 </h:form>
@@ -27,20 +27,30 @@
 
     <ui:define name="content">
         <div style="display: grid; grid-template-rows: 50px auto; height: 100%;">
-            <div style="grid-row: 1; grid-column: 1;">#{crdController.title}</div>
-            <div style="grid-row: 2; grid-column: 1; width: calc(100% - 20px); height: calc(100% - 20px); margin: 10px;" id="editor"></div>
+            <div style="grid-row: 1; grid-column: 1;">
+                <h:panelGroup layout="block" id="setToolbar">#{crdController.title}</h:panelGroup>
+            </div>
+            <div style="grid-row: 2; grid-column: 1;">
+                <div style="width: calc(100% - 20px); height: calc(100% - 20px); margin: 10px;" id="editor"></div>
+            </div>
         </div>
-
         <script src="/assets/min/vs/loader.js"></script>
         <script>
             require.config({ paths: { vs: 'assets/min/vs' } });
             require(['vs/editor/editor.main'], function () {
-                var editor = monaco.editor.create(document.getElementById('editor'), {
+                window.monacoEditor = monaco.editor.create(document.getElementById('editor'), {
                     value: '',
-                    language: 'yaml'
+                    language: 'yaml',
+                    minimap: { enabled: false }
                 });
             });
         </script>
+        <h:panelGroup layout="block" id="setEditorValue"><script>
+            // var value = window.monacoEditor.getValue();
+            if(window.monacoEditor){
+                window.monacoEditor.getModel().setValue(#{crdController.spec});
+            }
+        </script></h:panelGroup>
     </ui:define>
 
 </ui:composition>

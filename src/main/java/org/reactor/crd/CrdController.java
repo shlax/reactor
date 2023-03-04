@@ -24,6 +24,8 @@ public class CrdController implements Serializable{
     private List<MenuItem> definitions = null;
     
     public List<MenuItem> getCrdDefinitions(){
+        // if(true) return Collections.singletonList(new MenuItem("a", "a"));
+
         //System.out.println("getCrdDefinitions()");
         synchronized (definitionsLock) {
             if(definitions != null) return definitions;
@@ -56,6 +58,7 @@ public class CrdController implements Serializable{
     
     // https://developers.redhat.com/articles/2023/01/05/how-use-fabric8-kubernetes-client#basic_create__read__update__and_delete_operations
     public List<MenuItem> getCrdObjects(){
+        // if(true) return Collections.singletonList(new MenuItem("a", "a"));
         //System.out.println("getCrdObjects("+crdId+")");
          
         synchronized (objectsLock) {
@@ -109,11 +112,13 @@ public class CrdController implements Serializable{
 
     // https://developers.redhat.com/articles/2023/01/05/how-use-fabric8-kubernetes-client#
     public String getSpec(){
+        //if(true) return "'"+getTitle()+"'";
+
         synchronized (objectsLock){
-            if(crdId == null) return "";
+            if(crdId == null) return "''";
 
             synchronized (specLock){
-                if(objId == null) return "";
+                if(objId == null) return "''";
                 if(spec != null) return spec;
 
                 var ext = context.getClient().apiextensions();
@@ -136,8 +141,28 @@ public class CrdController implements Serializable{
                         .get();
 
                 var s = i.getAdditionalProperties().get("spec");
-                spec = new Yaml().dump(s);
+                var str = new Yaml().dump(s);
 
+                var first = true;
+                var sb = new StringBuilder("[");
+                for(var l : str.split("\n")){
+                    if(first) first = false; else sb.append(",");
+                    sb.append("'");
+                    for(char c : l.toCharArray()){
+                        switch (c) {
+                            case '"', '\'', '\\' -> sb.append("\\").append(c);
+                            case '\t' -> sb.append("\\t");
+                            case '\r' -> sb.append("\\r");
+                            case '\b' -> sb.append("\\b");
+                            case '\f' -> sb.append("\\f");
+                            default -> sb.append(c);
+                        }
+
+                    }
+                    sb.append("'");
+                }
+                sb.append("].join('\\n')");
+                spec = sb.toString();
                 return spec;
             }
         }
