@@ -157,7 +157,6 @@ public class CrdController implements Serializable{
                             case '\f' -> sb.append("\\f");
                             default -> sb.append(c);
                         }
-
                     }
                     sb.append("'");
                 }
