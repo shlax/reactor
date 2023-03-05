@@ -41,6 +41,7 @@
                 window.monacoEditor = monaco.editor.create(document.getElementById('editor'), {
                     value: '',
                     language: 'yaml',
+                    readOnly: true,
                     scrollBeyondLastLine: false,
                     minimap: { enabled: false }
                 });
