@@ -1,17 +1,16 @@
 package org.reactor.crd;
 
+import io.fabric8.kubernetes.api.model.GenericKubernetesResource;
 import io.fabric8.kubernetes.client.dsl.base.ResourceDefinitionContext;
 import jakarta.enterprise.context.SessionScoped;
 import jakarta.inject.Inject;
 import jakarta.inject.Named;
 import java.io.Serializable;
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.List;
+import java.io.StringReader;
+import java.util.*;
+
 import org.reactor.kubernetes.KubernetesContext;
 import org.yaml.snakeyaml.Yaml;
-
-import java.util.Objects;
 
 @Named
 @SessionScoped
@@ -110,6 +109,30 @@ public class CrdController implements Serializable{
         
     } 
 
+    private GenericKubernetesResource selectedObject(){
+
+        var ext = context.getClient().apiextensions();
+        var crd = ext.v1().customResourceDefinitions().withName(this.crdId).get();
+
+        var kind = crd.getSpec().getNames().getKind();
+        var group = crd.getSpec().getGroup();
+
+        var nmVer = objId.split("/");
+
+        var ctx = new ResourceDefinitionContext.Builder()
+                .withNamespaced(true)
+                .withKind(kind)
+                .withGroup(group)
+                .withVersion(nmVer[1])
+                .build();
+
+        var i = context.getClient().genericKubernetesResources(ctx)
+                .withName(nmVer[0])
+                .get();
+
+        return i;
+    }
+
     // https://developers.redhat.com/articles/2023/01/05/how-use-fabric8-kubernetes-client#
     public String getSpec(){
         //if(true) return "'"+getTitle()+"'";
@@ -121,24 +144,7 @@ public class CrdController implements Serializable{
                 if(objId == null) return "''";
                 if(spec != null) return spec;
 
-                var ext = context.getClient().apiextensions();
-                var crd = ext.v1().customResourceDefinitions().withName(this.crdId).get();
-
-                var kind = crd.getSpec().getNames().getKind();
-                var group = crd.getSpec().getGroup();
-
-                var nmVer = objId.split("/");
-
-                var ctx = new ResourceDefinitionContext.Builder()
-                        .withNamespaced(true)
-                        .withKind(kind)
-                        .withGroup(group)
-                        .withVersion(nmVer[1])
-                        .build();
-
-                var i = context.getClient().genericKubernetesResources(ctx)
-                        .withName(nmVer[0])
-                        .get();
+                var i = selectedObject();
 
                 var s = i.getAdditionalProperties().get("spec");
                 var str = new Yaml().dump(s);
@@ -166,7 +172,29 @@ public class CrdController implements Serializable{
             }
         }
     }
+    
+    public void setNewSpec(String newSpec){
+        if(newSpec == null) throw new NullPointerException("spec is null");
 
+        // System.out.println(spec);
+        synchronized (objectsLock) {
+            if (crdId == null) throw new IllegalStateException("crdId is null");
+            synchronized (specLock) {
+                if (objId == null) throw new IllegalStateException("objId is null");
+
+                var i = selectedObject();
+
+                Object s = new Yaml().load(newSpec);
+                i.getAdditionalProperties().put("spec", s);
+
+                var ext = context.getClient();
+                ext.genericKubernetesResources(i.getApiVersion(), i.getKind()).resource(i).createOrReplace();
+
+                spec = null;
+            }
+        }
+    }
+        
     public String getTitle(){
         synchronized (objectsLock){
             if(crdId == null) return "";
@@ -176,5 +204,9 @@ public class CrdController implements Serializable{
             }
         }
     }
-    
+        
+    public String getNewSpec(){
+        return "";
+    }
+        
 }

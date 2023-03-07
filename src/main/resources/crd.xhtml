@@ -27,8 +27,14 @@
 
     <ui:define name="content">
         <div style="display: grid; grid-template-rows: 50px auto; height: 100%;">
-            <div style="grid-row: 1; grid-column: 1;">
-                <h:panelGroup layout="block" id="setToolbar">#{crdController.title}</h:panelGroup>
+            <div style="grid-row: 1; grid-column: 1;">                
+                <h:form id="apply">
+                    <f:ajax execute="newSpec">
+                        <h:inputHidden id="newSpec" value="#{crdController.newSpec}" />
+                        <h:commandButton value="apply" onclick="return useEditorValue()" />                                                
+                    </f:ajax>
+                </h:form>                
+                <h:panelGroup id="setToolbar">#{crdController.title}</h:panelGroup>
             </div>
             <div style="grid-row: 2; grid-column: 1;">
                 <div style="width: calc(100% - 20px); height: calc(100% - 20px); margin: 10px;" id="editor"></div>
@@ -41,11 +47,15 @@
                 window.monacoEditor = monaco.editor.create(document.getElementById('editor'), {
                     value: '',
                     language: 'yaml',
-                    readOnly: true,
+                    // readOnly: true,
                     scrollBeyondLastLine: false,
                     minimap: { enabled: false }
                 });
-            });
+            });            
+            function useEditorValue(){
+                document.getElementById("apply:newSpec").value = window.monacoEditor.getValue();
+                return true;
+            }            
         </script>
         <h:panelGroup layout="block" id="setEditorValue"><script>
             // var value = window.monacoEditor.getValue();
